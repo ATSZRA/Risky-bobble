@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ヤバい台詞を拾え！ 試作版</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#10131c;color:#f7f7fb;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+body{display:grid;place-items:center;padding:18px}
+.shell{width:min(1120px,100%)}
+h1{margin:0 0 8px;font-size:clamp(25px,4vw,48px);line-height:1.05}
+.sub{color:#cfd6ff;margin-bottom:12px;line-height:1.55;font-weight:700}
+.hud{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.panel{background:#1d2435;border:1px solid #52607f;border-radius:14px;padding:10px 12px;box-shadow:0 10px 24px #0005}
+.label{font-size:12px;color:#aeb9dc;font-weight:800}
+.value{font-size:23px;font-weight:950;color:#ffe083}
+#stage{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:22px;border:2px solid #52607f;background:radial-gradient(circle at 18% 20%,#3c4c78 0 8%,transparent 9%),radial-gradient(circle at 82% 18%,#3c4c78 0 8%,transparent 9%),linear-gradient(180deg,#27314a,#151b2b 70%,#0f1320);box-shadow:0 25px 70px #0008;user-select:none}
+.officeLine{position:absolute;inset:auto 0 0 0;height:22%;background:linear-gradient(180deg,#262b38,#181c27);border-top:3px solid #596178}
+.desk{position:absolute;bottom:7%;left:10%;width:80%;height:13%;border-radius:16px 16px 0 0;background:linear-gradient(180deg,#775234,#4b321f);box-shadow:0 8px 0 #22160e}
+.person{position:absolute;bottom:18%;width:76px;height:136px;filter:drop-shadow(0 8px 8px #0006)}
+.person .head{width:54px;height:54px;border-radius:50%;background:#ffd3a7;margin:0 auto;border:3px solid #34251b}
+.person .body{width:76px;height:82px;border-radius:22px 22px 8px 8px;margin-top:-2px;border:3px solid #1a1e2a}
+.boss{left:15%}.boss .body{background:#4967a8}.member{right:15%}.member .body{background:#b65d74}
+.namePlate{position:absolute;bottom:12%;padding:5px 10px;border-radius:999px;background:#0009;border:1px solid #ffffff55;font-weight:900;color:#fff;font-size:13px}
+.nameBoss{left:15%}.nameMember{right:15%}
+.bubble{position:absolute;max-width:min(410px,78%);min-width:180px;padding:14px 16px;border-radius:22px;background:#fff;color:#141414;border:4px solid #1a1a1a;box-shadow:0 12px 24px #0005;font-size:clamp(16px,2vw,25px);font-weight:900;line-height:1.45;cursor:pointer;animation:appear .12s ease-out;z-index:4}
+.bubble::before{content:"";position:absolute;bottom:-20px;width:0;height:0;border-top:20px solid #1a1a1a;border-left:14px solid transparent;border-right:14px solid transparent}
+.bubble::after{content:"";position:absolute;bottom:-14px;width:0;height:0;border-top:16px solid #fff;border-left:11px solid transparent;border-right:11px solid transparent}
+.fromBoss::before{left:34px}.fromBoss::after{left:37px}.fromMember::before{right:34px}.fromMember::after{right:37px}
+.clickedGood{background:#ffe3e3;border-color:#d82525}.clickedBad{background:#e4f0ff;border-color:#2474d8}.missedBubble{background:#fff2c9;border-color:#d89a24}
+@keyframes appear{from{transform:scale(.85);opacity:.2}to{transform:scale(1);opacity:1}}
+#toast{position:absolute;left:50%;top:6%;transform:translateX(-50%);z-index:8;min-width:min(620px,90%);padding:12px 18px;border-radius:18px;background:#000c;border:1px solid #ffffff55;color:#fff;font-weight:900;line-height:1.45;opacity:0;pointer-events:none;transition:.16s;text-align:center}
+#toast.show{opacity:1;top:8%}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;z-index:10;padding:24px;background:#080b12cc;backdrop-filter:blur(3px)}
+#resultOverlay{display:none}
+.modal{width:min(760px,96%);border-radius:26px;border:2px solid #ffe083;background:linear-gradient(180deg,#253252,#111827);padding:24px;box-shadow:0 25px 80px #0009;text-align:center}
+.modal h2{margin:0 0 10px;font-size:clamp(28px,5vw,56px);color:#ffe083}
+.modal p{line-height:1.65;font-weight:750}
+button{border:0;border-radius:999px;padding:11px 18px;font-weight:950;cursor:pointer;background:#ffe083;color:#16120a;box-shadow:0 9px 20px #0007}
+button:hover{filter:brightness(1.08)}
+.resultList{margin:14px auto 0;max-height:260px;overflow:auto;text-align:left;background:#0c111d;border:1px solid #52607f;border-radius:16px;padding:12px}
+.resultItem{padding:9px 10px;border-bottom:1px solid #52607f66;line-height:1.5}.resultItem:last-child{border-bottom:0}
+.tag{display:inline-block;margin-right:6px;padding:2px 7px;border-radius:999px;font-size:12px;font-weight:900;background:#ffe083;color:#19150b}
+.small{font-size:13px;color:#cfd6ff}
+@media(max-width:760px){body{padding:10px}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.panel:last-child{grid-column:span 2}.value{font-size:19px}.person{transform:scale(.75);transform-origin:bottom center}}
+</style>
+</head>
+<body>
+<div class="shell">
+<h1>ヤバい台詞を拾え！</h1>
+<div class="sub">職場会話のフキダシが次々に出る。ハラスメントリスクがあると思った台詞をクリック。何でも押すとミスだ。</div>
+<div class="hud">
+<div class="panel"><div class="label">発見</div><div class="value"><span id="found">0</span>/<span id="totalRisk">0</span></div></div>
+<div class="panel"><div class="label">ミス</div><div class="value"><span id="miss">0</span>/3</div></div>
+<div class="panel"><div class="label">見逃し</div><div class="value"><span id="missed">0</span></div></div>
+<div class="panel"><div class="label">残り</div><div class="value"><span id="time">60</span>s</div></div>
+<div class="panel"><div class="label">評価</div><div class="value" id="status">待機中</div></div>
+</div>
+<div id="stage">
+<div class="officeLine"></div><div class="desk"></div>
+<div class="person boss"><div class="head"></div><div class="body"></div></div>
+<div class="person member"><div class="head"></div><div class="body"></div></div>
+<div class="namePlate nameBoss">上司</div><div class="namePlate nameMember">部下</div>
+<div id="toast"></div>
+<div id="startOverlay" class="overlay"><div class="modal"><h2>研修開始</h2><p>問題があると思ったフキダシをクリック。<br>セーフな発言をクリックするとミス。問題発言を見逃すと「見逃し」になる。</p><button id="startBtn">スタート</button></div></div>
+<div id="resultOverlay" class="overlay"><div class="modal"><h2 id="resultTitle">結果</h2><p id="resultSummary"></p><button id="retryBtn">もう一度</button><div class="resultList" id="resultList"></div></div></div>
+</div>
+</div>
+<script>
+const lines=[
+{text:"男なんだから、それくらいやれよ。",speaker:"boss",risk:true,category:"性別役割",explanation:"性別に基づいて役割や負担を押し付ける発言で、職場発言として問題になり得ます。"},
+{text:"最近元気がないように見えるけど、大丈夫？",speaker:"boss",risk:false,category:"配慮",explanation:"体調を気遣う声かけ自体は直ちに問題とは限りません。ただし聞き方や場面には配慮が必要です。"},
+{text:"残業できないなら、評価は下がるよ。",speaker:"boss",risk:true,category:"不利益示唆",explanation:"事情を確認せず、残業不能を理由に評価低下を示唆する発言は、圧力として問題になり得ます。"},
+{text:"この件、困っていたら一緒に整理しよう。",speaker:"boss",risk:false,category:"支援",explanation:"業務上の支援を申し出る発言であり、通常は問題発言とはいえません。"},
+{text:"まだ結婚してないの？ そろそろ考えたら？",speaker:"boss",risk:true,category:"私生活干渉",explanation:"結婚など私生活に踏み込む発言は、相手に不快感や圧力を与える可能性があります。"},
+{text:"期限が近いので、優先順位を確認しましょう。",speaker:"boss",risk:false,category:"業務指示",explanation:"業務の進行管理に関する発言で、通常は適正な業務指示の範囲です。"},
+{text:"そういう冗談も通じないタイプ？",speaker:"boss",risk:true,category:"人格攻撃",explanation:"不快感を示した相手を揶揄する発言で、職場環境を悪化させる可能性があります。"},
+{text:"今日の会議では、この点を重点的に説明してください。",speaker:"boss",risk:false,category:"業務依頼",explanation:"具体的な業務依頼であり、通常は問題発言とはいえません。"},
+{text:"子どもができたら、この部署は厳しいんじゃない？",speaker:"boss",risk:true,category:"妊娠・育児",explanation:"妊娠・育児を理由に職務適性を決めつける発言は、重大なリスクがあります。"},
+{text:"辞めたいなら、代わりを連れてきてからにして。",speaker:"boss",risk:true,category:"退職妨害",explanation:"退職の自由を不当に制約する趣旨に受け取られかねない発言です。"},
+{text:"新人なんだから、もう少し空気を読んでほしいな。",speaker:"boss",risk:true,category:"グレー",explanation:"文脈次第ですが、人格評価や同調圧力として機能すると問題化し得るため、注意が必要です。"},
+{text:"次回から、作業前に確認してもらえれば大丈夫です。",speaker:"boss",risk:false,category:"改善指導",explanation:"具体的な改善方法を示す指導であり、通常は問題発言とはいえません。"}
+];
+let queue=[],running=false,found=0,miss=0,missed=0,timeLeft=60,activeBubble=null,countdownTimer=null,results=[];
+const stage=document.getElementById("stage"),toast=document.getElementById("toast"),foundEl=document.getElementById("found"),totalRiskEl=document.getElementById("totalRisk"),missEl=document.getElementById("miss"),missedEl=document.getElementById("missed"),timeEl=document.getElementById("time"),statusEl=document.getElementById("status"),startOverlay=document.getElementById("startOverlay"),resultOverlay=document.getElementById("resultOverlay"),resultTitle=document.getElementById("resultTitle"),resultSummary=document.getElementById("resultSummary"),resultList=document.getElementById("resultList");
+const totalRisk=lines.filter(l=>l.risk).length;totalRiskEl.textContent=totalRisk;
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function showToast(text){toast.innerHTML=text;toast.classList.add("show");clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove("show"),1200)}
+function updateHud(){foundEl.textContent=found;missEl.textContent=miss;missedEl.textContent=missed;timeEl.textContent=timeLeft}
+function clearBubble(){if(activeBubble){activeBubble.remove();activeBubble=null}}
+function spawnBubble(){
+ if(!running)return;clearBubble();if(queue.length===0){finish();return}
+ const data=queue.shift();const b=document.createElement("div");b.className="bubble "+(data.speaker==="boss"?"fromBoss":"fromMember");b.textContent=data.text;b.dataset.risk=data.risk?"1":"0";
+ const positions=data.speaker==="boss"?[{left:"24%",top:"18%"},{left:"30%",top:"28%"},{left:"18%",top:"38%"}]:[{right:"24%",top:"18%"},{right:"30%",top:"28%"},{right:"18%",top:"38%"}];
+ Object.assign(b.style,positions[Math.floor(Math.random()*positions.length)]);
+ b.addEventListener("click",()=>{if(!running||b.dataset.done==="1")return;b.dataset.done="1";if(data.risk){found++;b.classList.add("clickedGood");results.push({type:"found",data});showToast("<strong>発見！</strong><br>"+data.category+"："+data.explanation);updateHud();setTimeout(spawnBubble,950)}else{miss++;b.classList.add("clickedBad");results.push({type:"wrong",data});showToast("<strong>ミス。</strong><br>これは直ちに問題発言とは限りません。");updateHud();if(miss>=3){setTimeout(()=>finish(),650)}else{setTimeout(spawnBubble,850)}}});
+ stage.appendChild(b);activeBubble=b;
+ setTimeout(()=>{if(!running||activeBubble!==b||b.dataset.done==="1")return;if(data.risk){missed++;b.classList.add("missedBubble");results.push({type:"missed",data});showToast("<strong>見逃し！</strong><br>"+data.category+"：今の発言にはリスクがありました。");updateHud();setTimeout(spawnBubble,850)}else{results.push({type:"safe",data});spawnBubble()}},3600);
+}
+function start(){running=true;found=0;miss=0;missed=0;timeLeft=60;results=[];queue=shuffle(lines);statusEl.textContent="研修中";startOverlay.style.display="none";resultOverlay.style.display="none";updateHud();clearInterval(countdownTimer);countdownTimer=setInterval(()=>{if(!running)return;timeLeft--;updateHud();if(timeLeft<=0)finish()},1000);spawnBubble()}
+function finish(){if(!running)return;running=false;clearInterval(countdownTimer);clearBubble();const ratio=found/totalRisk;let rank="C",title="もう一度確認しましょう";if(found===totalRisk&&miss===0){rank="S";title="ハラスメント感知名人"}else if(ratio>=0.8&&miss<=2){rank="A";title="相談窓口レベル"}else if(ratio>=0.6){rank="B";title="管理職研修クリア"}statusEl.textContent=rank;resultTitle.textContent="結果："+rank+"　"+title;resultSummary.textContent="発見 "+found+"/"+totalRisk+"、ミス "+miss+"、見逃し "+missed+"。";const important=results.filter(r=>r.type==="found"||r.type==="missed"||r.type==="wrong");resultList.innerHTML=important.map(r=>{const label=r.type==="found"?"発見":r.type==="missed"?"見逃し":"ミス";const icon=r.type==="found"?"✅":r.type==="missed"?"⚠️":"❌";return `<div class="resultItem"><span class="tag">${icon} ${label}</span><strong>${escapeHtml(r.data.text)}</strong><br><span class="small">${escapeHtml(r.data.category)}：${escapeHtml(r.data.explanation)}</span></div>`}).join("")||"<div class='resultItem'>記録なし。</div>";resultOverlay.style.display="grid"}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+document.getElementById("startBtn").onclick=start;
+document.getElementById("retryBtn").onclick=()=>{resultOverlay.style.display="none";startOverlay.style.display="grid";statusEl.textContent="待機中"};
+updateHud();
+</script>
+</body>
+</html>
