@@ -17,7 +17,7 @@ h1{margin:0 0 6px;font-size:clamp(30px,5vw,60px);letter-spacing:.04em}
 .value{font-size:22px;color:#ffe083;font-weight:1000}
 #stage{
   position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:22px;border:2px solid #52607f;
-  background:#1b2437 center/cover no-repeat url('background.png');
+  background:#1b2437 center/cover no-repeat url('背景イラスト/background.png');
   box-shadow:0 25px 70px #0008;user-select:none;
 }
 #stage::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0a102055 0%,#0a102010 40%,#09111f66 100%);pointer-events:none;z-index:0}
@@ -39,6 +39,9 @@ h1{margin:0 0 6px;font-size:clamp(30px,5vw,60px);letter-spacing:.04em}
 .clickedGood{background:#ffe4e4;border-color:#d62b2b}
 .clickedBad{background:#e5efff;border-color:#2a72d9}
 .missedBubble{background:#fff2c9;border-color:#d89a24}
+.judgedCorrect{background:#e4ffe9;border-color:#2d9a50}
+.judgedWrong{background:#ffe4e4;border-color:#d62b2b}
+.testBubble{cursor:default}
 @keyframes pop{from{transform:scale(.85);opacity:.15}to{transform:scale(1);opacity:1}}
 #toast{position:absolute;left:50%;top:6%;transform:translateX(-50%);z-index:8;width:min(760px,92%);padding:12px 18px;border-radius:18px;background:#000d;border:1px solid #ffffff55;color:#fff;font-weight:900;line-height:1.45;opacity:0;pointer-events:none;transition:.16s;text-align:center}
 #toast.show{opacity:1;top:8%}
@@ -60,6 +63,15 @@ button.secondary{background:#d9e7ff;color:#07162f}
 .small{font-size:13px;color:#cfd6ff}
 #rewardCard{display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:18px;align-items:center;text-align:left;margin-top:14px}
 #rewardCard img{width:100%;border-radius:18px;border:2px solid #ffe083;background:#0c111d;display:block}
+#rewardOverlay .modal{max-height:calc(100% - 24px);display:flex;flex-direction:column;overflow:hidden;padding:18px 22px}
+#rewardOverlay .modal h2{flex:0 0 auto;margin-bottom:4px;font-size:clamp(26px,4vw,46px)}
+#rewardOverlay .modal>p{flex:0 0 auto;margin:4px 0;line-height:1.45}
+#rewardOverlay #rewardCard{flex:0 0 auto;grid-template-columns:minmax(130px,190px) 1fr;gap:14px;margin-top:8px}
+#rewardOverlay #rewardCard img{max-height:125px;object-fit:contain}
+#rewardOverlay .rewardTitle{font-size:clamp(19px,3vw,28px)}
+#rewardOverlay #rewardText{margin:4px 0;line-height:1.4}
+#rewardOverlay .resultList{flex:1 1 auto;min-height:72px;max-height:none;width:100%;margin-top:10px}
+#rewardOverlay .retryBtn{flex:0 0 auto;align-self:center;margin-top:10px}
 .rewardTitle{font-size:clamp(22px,4vw,34px);font-weight:1000;color:#ffe083;margin-bottom:8px}
 .note{margin-top:10px;color:#cfd6ff;line-height:1.6;font-size:13px}
 .lessonBar{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:6;width:min(820px,92%);background:#080b12dd;border:1px solid #ffffff55;border-radius:22px;padding:14px;box-shadow:0 12px 28px #0008;text-align:center}
@@ -70,8 +82,16 @@ button.secondary{background:#d9e7ff;color:#07162f}
 .lessonFeedback.correct{border-color:#ff8b8b;background:#2b1016}
 .lessonFeedback.wrong{border-color:#83b7ff;background:#101b2b}
 #nextLessonBtn{margin-top:12px}
+.testJudge{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:7;width:min(650px,92%);padding:13px 15px 15px;border-radius:20px;background:#080b12e8;border:1px solid #ffffff66;box-shadow:0 14px 34px #0009;text-align:center;animation:pop .14s ease-out}
+.testTimerHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;color:#dce5ff;font-size:13px;font-weight:900}
+.testTimerNumber{color:#ffe083;font-size:25px;line-height:1}
+.testTimerTrack{height:11px;margin-bottom:11px;overflow:hidden;border-radius:999px;background:#303b58;border:1px solid #6d7c9e}
+.testTimerFill{height:100%;width:100%;background:linear-gradient(90deg,#ff695f,#ffe083);transform-origin:left center}
+.testChoices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.testChoices button{font-size:17px}.testSafeBtn{background:#68b8ff;color:#07162f}.testRiskBtn{background:#ff7777;color:#321013}
+.testJudge.answered{pointer-events:none;opacity:.72}
 @media(max-width:900px){.hud{grid-template-columns:repeat(3,minmax(0,1fr))}.value{font-size:18px}.character{width:28%}}
-@media(max-width:700px){body{padding:10px}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.character{display:none}.namePlate{display:none}.bubble{max-width:84%;min-width:0}.fromLeft{left:8%!important}.fromRight{right:8%!important}#rewardCard{grid-template-columns:1fr;text-align:center}.lessonBar{bottom:10px;width:96%;padding:10px}}
+@media(max-width:700px){body{padding:10px}.hud{grid-template-columns:repeat(2,minmax(0,1fr))}.character{display:none}.namePlate{display:none}.bubble{max-width:84%;min-width:0}.fromLeft{left:8%!important}.fromRight{right:8%!important}#rewardCard{grid-template-columns:1fr;text-align:center}#rewardOverlay #rewardCard{grid-template-columns:100px 1fr;text-align:left}#rewardOverlay #rewardCard img{max-height:92px}.lessonBar,.testJudge{bottom:10px;width:96%;padding:10px}}
 </style>
 </head>
 <body>
@@ -86,23 +106,21 @@ button.secondary{background:#d9e7ff;color:#07162f}
     <div class="panel"><div class="label">FOUND</div><div class="value"><span id="found">0</span></div></div>
     <div class="panel"><div class="label">MISS</div><div class="value"><span id="miss">0</span>/4</div></div>
     <div class="panel"><div class="label">MISSED</div><div class="value"><span id="missed">0</span></div></div>
-    <div class="panel"><div class="label">TIME</div><div class="value"><span id="time">50</span>s</div></div>
+    <div class="panel"><div class="label">LIMIT</div><div class="value"><span id="time">5</span>s</div></div>
   </div>
 
   <div id="stage">
     <div class="floor"></div>
-    <div class="character" id="c1"><img src="character1.png" alt="character1"></div>
-    <div class="character" id="c2"><img src="character2.png" alt="character2"></div>
-    <div class="namePlate" id="n1">職場の人A</div>
-    <div class="namePlate" id="n2">職場の人B</div>
+    <div class="character" id="c1"><img src="キャライラスト/character1.png" alt="character1"></div>
+    <div class="character" id="c2"><img src="キャライラスト/character2.png" alt="character2"></div>
     <div id="toast"></div>
     <div id="comboBadge">3 COMBO!</div>
 
-    <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
-    <audio id="correctSe" src="correct.mp3" preload="auto"></audio>
-    <audio id="wrongSe" src="wrong.mp3" preload="auto"></audio>
-    <audio id="stageClearSe" src="stage_clear.mp3" preload="auto"></audio>
-    <audio id="completeSe" src="complete.wav" preload="auto"></audio>
+    <audio id="bgm" loop preload="auto"></audio>
+    <audio id="correctSe" src="音声/correct.mp3" preload="auto"></audio>
+    <audio id="wrongSe" src="音声/wrong.mp3" preload="auto"></audio>
+    <audio id="stageClearSe" src="音声/stage_clear.mp3" preload="auto"></audio>
+    <audio id="completeSe" src="音声/stage_clear.mp3" preload="auto"></audio>
 
     <div id="lessonBar" class="lessonBar hidden">
       <div class="lessonQuestion" id="lessonProgress">授業モード</div>
@@ -114,15 +132,24 @@ button.secondary{background:#d9e7ff;color:#07162f}
       <button id="nextLessonBtn" class="hidden">次へ</button>
     </div>
 
+    <div id="testJudge" class="testJudge hidden">
+      <div class="testTimerHead"><span>この台詞はセーフ？ 危険？</span><span><b id="testTimerNumber" class="testTimerNumber">5</b> 秒</span></div>
+      <div class="testTimerTrack"><div id="testTimerFill" class="testTimerFill"></div></div>
+      <div class="testChoices">
+        <button id="testSafeBtn" class="testSafeBtn">セーフ</button>
+        <button id="testRiskBtn" class="testRiskBtn">危険</button>
+      </div>
+    </div>
+
     <div id="startOverlay" class="overlay">
       <div class="modal">
         <h2>Risky Bubble</h2>
-        <p><strong>授業モード</strong>では、バブルが1個ずつ出ます。危険／セーフを選ぶと、正解でも不正解でも解説が出ます。<br><strong>テストモード</strong>では、制限時間内に危険バブルをクリックして消します。最後に間違えたもの一覧が出ます。</p>
+        <p><strong>授業モード</strong>では、バブルが1個ずつ出ます。危険／セーフを選ぶと、正解でも不正解でも解説が出ます。<br><strong>テストモード</strong>では、設定された回答時間内に「セーフ」か「危険」を選びます。時間切れになると自動的に「セーフ」が選ばれます。</p>
         <div class="modeButtons">
           <button id="lessonStartBtn">授業モード</button>
           <button id="testStartBtn" class="secondary">テストモード</button>
         </div>
-        <div class="note">※ 同じフォルダに <strong>background.png / character1.png / character2.png / reward.png</strong> を置くと画像が読み込まれる。<br>音声は <strong>bgm.mp3 / correct.wav / wrong.wav / stage_clear.wav / complete.wav</strong> を同じフォルダに置くと読み込まれる。</div>
+        <div class="note">背景・キャラクター画像と、正解・不正解・ステージクリアの効果音を使用します。</div>
       </div>
     </div>
 
@@ -148,7 +175,7 @@ button.secondary{background:#d9e7ff;color:#07162f}
         <h2 id="rewardHeading">ALL CLEAR</h2>
         <p id="rewardSummary">すべてのステージを突破。<br>君は <strong>労働基準法の護り手</strong> だ。</p>
         <div id="rewardCard">
-          <img src="reward.png" alt="reward">
+          <img src="報酬イラスト/reward.png" alt="reward">
           <div>
             <div class="rewardTitle" id="rewardTitle">称号：労働基準法の護り手</div>
             <p id="rewardText">危険な会話の中から、法的に見逃せない台詞を拾い続けた。<br>違和感を感じ取る力こそ、コンプライアンスの第一歩だ。</p>
@@ -162,6 +189,7 @@ button.secondary{background:#d9e7ff;color:#07162f}
   </div>
 </div>
 <script>
+/* BUILDER_QUESTION_POOL_START */
 const QUESTION_POOL = [
   {
     "text": "店長「雇用契約書？うちは口約束で大丈夫だから」",
@@ -482,6 +510,25 @@ const QUESTION_POOL = [
     "explanation": "退職時証明の請求に適切に対応することは、望ましい対応です。"
   }
 ];
+/* BUILDER_QUESTION_POOL_END */
+/* BUILDER_STYLE_CONFIG_START */
+const STYLE_CONFIG = {
+  "background": "背景イラスト/background.png",
+  "character1": "キャライラスト/character1.png",
+  "character2": "キャライラスト/character2.png",
+  "character1Size": 24,
+  "character2Size": 24,
+  "character1X": 3,
+  "character1Y": 10,
+  "character2X": 3,
+  "character2Y": 10,
+  "answerSeconds": 5,
+  "bgm": "",
+  "correctSe": "音声/correct.mp3",
+  "wrongSe": "音声/wrong.mp3",
+  "reward": "報酬イラスト/reward.png"
+};
+/* BUILDER_STYLE_CONFIG_END */
 const STAGES = [
   {name:'STAGE 1', questionCount:10, targetRatio:0.65, time:50},
   {name:'STAGE 2', questionCount:12, targetRatio:0.70, time:55},
@@ -493,6 +540,7 @@ let stageIndex = 0, queue = [], running = false, activeBubble = null, countdownT
 let found = 0, miss = 0, missed = 0, shown = 0, combo = 0, maxCombo = 0, targetCount = 0, timeLeft = 0;
 let stageLogs = [], allLogs = [];
 let lessonIndex = 0, lessonCurrent = null, lessonLogs = [];
+let testCurrent = null;
 
 const el = id => document.getElementById(id);
 const stageEl = el('stage');
@@ -502,6 +550,25 @@ const toast = el('toast'), comboBadge = el('comboBadge');
 const bgm = el('bgm'), correctSe = el('correctSe'), wrongSe = el('wrongSe'), stageClearSe = el('stageClearSe'), completeSe = el('completeSe');
 const startOverlay = el('startOverlay'), stageClearOverlay = el('stageClearOverlay'), gameOverOverlay = el('gameOverOverlay'), rewardOverlay = el('rewardOverlay');
 const lessonBar = el('lessonBar'), lessonProgress = el('lessonProgress'), lessonChoices = el('lessonChoices'), lessonFeedback = el('lessonFeedback'), nextLessonBtn = el('nextLessonBtn');
+const testJudge = el('testJudge'), testTimerNumber = el('testTimerNumber'), testTimerFill = el('testTimerFill');
+
+function applyStyleConfig(){
+  stageEl.style.backgroundImage = `url("${STYLE_CONFIG.background}")`;
+  const c1 = el('c1'), c2 = el('c2');
+  c1.querySelector('img').src = STYLE_CONFIG.character1;
+  c2.querySelector('img').src = STYLE_CONFIG.character2;
+  c1.style.width = `${STYLE_CONFIG.character1Size}%`; c1.style.maxWidth = 'none';
+  c2.style.width = `${STYLE_CONFIG.character2Size}%`; c2.style.maxWidth = 'none';
+  c1.style.left = `${STYLE_CONFIG.character1X}%`; c1.style.bottom = `${STYLE_CONFIG.character1Y}%`;
+  c2.style.right = `${STYLE_CONFIG.character2X}%`; c2.style.bottom = `${STYLE_CONFIG.character2Y}%`;
+  if(STYLE_CONFIG.bgm) bgm.src = STYLE_CONFIG.bgm; else bgm.removeAttribute('src');
+  correctSe.src = STYLE_CONFIG.correctSe;
+  wrongSe.src = STYLE_CONFIG.wrongSe;
+  el('rewardCard').querySelector('img').src = STYLE_CONFIG.reward;
+  timeLeft = STYLE_CONFIG.answerSeconds;
+  timeEl.textContent = STYLE_CONFIG.answerSeconds;
+  testTimerNumber.textContent = STYLE_CONFIG.answerSeconds;
+}
 
 function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -512,6 +579,8 @@ function playSound(audio, volume=1){ if(!audio) return; try{ audio.pause(); audi
 function startBgm(){ if(!bgm) return; try{ bgm.volume = 0.22; bgm.currentTime = 0; bgm.play().catch(()=>{}); }catch(e){} }
 function stopBgm(){ if(!bgm) return; try{ bgm.pause(); bgm.currentTime = 0; }catch(e){} }
 function clearBubble(){ if(activeBubble){ activeBubble.remove(); activeBubble = null; } }
+function clearQuestionTimer(){ clearInterval(countdownTimer); countdownTimer = null; }
+function hideTestJudge(){ testJudge.classList.add('hidden'); testJudge.classList.remove('answered'); }
 function clearAllOverlays(){ startOverlay.classList.add('hidden'); stageClearOverlay.classList.add('hidden'); gameOverOverlay.classList.add('hidden'); rewardOverlay.classList.add('hidden'); }
 function resetHud(){ found = miss = missed = combo = maxCombo = targetCount = 0; timeLeft = 0; stageIndex = 0; updateHud(); }
 
@@ -531,7 +600,7 @@ function makeBubble(data, options={}){
 }
 
 function startLessonMode(){
-  currentMode = 'lesson'; running = true; clearInterval(countdownTimer); clearAllOverlays();
+  currentMode = 'lesson'; running = true; clearQuestionTimer(); hideTestJudge(); clearAllOverlays();
   startBgm(); resetHud(); modeLabel.textContent = '授業'; timeEl.textContent = '-'; stageNoEl.textContent = '-'; targetCountEl.textContent = `0/${LESSON_QUESTION_COUNT}`;
   lessonLogs = []; lessonIndex = 0; queue = shuffle(QUESTION_POOL).slice(0, LESSON_QUESTION_COUNT);
   lessonBar.classList.remove('hidden'); nextLesson();
@@ -575,54 +644,84 @@ function stageSetup(){
   queue = shuffle(QUESTION_POOL).slice(0, config.questionCount);
   targetCount = Math.ceil(queue.filter(q=>q.risk).length * config.targetRatio);
   if(targetCount < 3) targetCount = Math.min(3, queue.filter(q=>q.risk).length);
-  found = 0; miss = 0; missed = 0; shown = 0; combo = 0; maxCombo = 0; stageLogs = []; timeLeft = config.time;
+  found = 0; miss = 0; missed = 0; shown = 0; combo = 0; maxCombo = 0; stageLogs = []; timeLeft = STYLE_CONFIG.answerSeconds;
   modeLabel.textContent = 'テスト'; updateHud();
 }
 function startTestMode(){ stageIndex = 0; allLogs = []; startStage(); }
 function startStage(){
   currentMode = 'test'; running = true; lessonBar.classList.add('hidden'); clearAllOverlays(); startBgm(); stageSetup();
-  clearInterval(countdownTimer);
-  countdownTimer = setInterval(()=>{ if(!running) return; timeLeft--; updateHud(); if(timeLeft <= 0) finishStage(); },1000);
+  clearQuestionTimer();
   spawnBubble();
 }
 function spawnBubble(){
   if(!running || currentMode !== 'test') return;
+  clearQuestionTimer(); hideTestJudge();
   clearBubble();
   if(queue.length === 0){ finishStage(); return; }
-  const data = queue.shift(); shown++;
+  const data = queue.shift(); testCurrent = data; shown++;
   const b = makeBubble(data);
-  b.addEventListener('click', ()=>{
-    if(!running || b.dataset.done === '1') return;
-    b.dataset.done = '1';
-    if(data.risk){
-      found++; combo++; if(combo > maxCombo) maxCombo = combo; b.classList.add('clickedGood');
-      playSound(correctSe, 0.65); stageLogs.push({type:'found', data});
-      showToast(`<strong>RISK DETECTED!</strong><br>${esc(data.category)}：${esc(data.explanation)}`);
-      showCombo(); updateHud();
-      setTimeout(()=>{ if(found >= targetCount) finishStage(); else spawnBubble(); }, 850);
-    }else{
-      miss++; combo = 0; b.classList.add('clickedBad');
-      playSound(wrongSe, 0.7); stageLogs.push({type:'wrong', data});
-      showToast(`<strong>誤判定</strong><br>${esc(data.category)}：${esc(data.explanation)}`);
-      updateHud();
-      if(miss >= 4){ setTimeout(gameOver, 650); } else { setTimeout(spawnBubble, 820); }
+  b.classList.add('testBubble');
+  testJudge.classList.remove('hidden','answered');
+  startQuestionTimer();
+}
+function startQuestionTimer(){
+  clearQuestionTimer();
+  const duration = STYLE_CONFIG.answerSeconds * 1000, started = performance.now();
+  timeLeft = STYLE_CONFIG.answerSeconds; testTimerNumber.textContent = STYLE_CONFIG.answerSeconds; testTimerFill.style.transform = 'scaleX(1)'; updateHud();
+  countdownTimer = setInterval(()=>{
+    if(!running || currentMode !== 'test') return clearQuestionTimer();
+    const elapsed = performance.now() - started;
+    const remaining = Math.max(0, duration - elapsed);
+    timeLeft = Math.ceil(remaining / 1000);
+    testTimerNumber.textContent = timeLeft;
+    testTimerFill.style.transform = `scaleX(${remaining / duration})`;
+    updateHud();
+    if(remaining <= 0){
+      clearQuestionTimer();
+      timeLeft = 0; testTimerNumber.textContent = '0'; testTimerFill.style.transform = 'scaleX(0)'; updateHud();
+      answerTest(false, true);
     }
-  });
-  const displayMs = 3100 + Math.random()*1400;
-  setTimeout(()=>{
-    if(!running || currentMode !== 'test' || activeBubble !== b || b.dataset.done === '1') return;
+  }, 50);
+}
+function answerTest(answerRisk, timedOut=false){
+  const data = testCurrent, b = activeBubble;
+  if(!running || currentMode !== 'test' || !data || !b || b.dataset.done === '1') return;
+  b.dataset.done = '1'; clearQuestionTimer(); testJudge.classList.add('answered');
+  const correct = answerRisk === data.risk;
+  b.classList.add(correct ? 'judgedCorrect' : 'judgedWrong');
+  if(correct){
+    combo++; if(combo > maxCombo) maxCombo = combo;
+    playSound(correctSe, 0.65);
     if(data.risk){
-      missed++; combo = 0; b.classList.add('missedBubble');
-      playSound(wrongSe, 0.55); stageLogs.push({type:'missed', data});
-      showToast(`<strong>MISSED RISK</strong><br>${esc(data.category)}：${esc(data.explanation)}`);
-      updateHud();
-      if(miss + missed >= 5){ setTimeout(gameOver, 700); } else setTimeout(spawnBubble, 820);
-    }else{ stageLogs.push({type:'safe', data}); spawnBubble(); }
-  }, displayMs);
+      found++; stageLogs.push({type:'found', data});
+      showToast(`<strong>正解：危険</strong><br>${esc(data.category)}：${esc(data.explanation)}`);
+    }else{
+      stageLogs.push({type:'safe', data});
+      showToast(`<strong>${timedOut ? '時間切れ → セーフ：正解' : '正解：セーフ'}</strong><br>${esc(data.category)}：${esc(data.explanation)}`);
+    }
+    showCombo();
+  }else{
+    combo = 0; playSound(wrongSe, 0.7);
+    if(answerRisk){
+      miss++; stageLogs.push({type:'wrong', data});
+      showToast(`<strong>不正解：セーフな台詞です</strong><br>${esc(data.category)}：${esc(data.explanation)}`);
+    }else{
+      missed++; stageLogs.push({type:'missed', data});
+      showToast(`<strong>${timedOut ? '時間切れ → セーフ：不正解' : '不正解：危険な台詞です'}</strong><br>${esc(data.category)}：${esc(data.explanation)}`);
+    }
+  }
+  updateHud();
+  const failed = miss >= 4 || miss + missed >= 5;
+  setTimeout(()=>{
+    if(!running || currentMode !== 'test') return;
+    if(failed) gameOver();
+    else if(found >= targetCount) finishStage();
+    else spawnBubble();
+  }, 900);
 }
 function finishStage(){
   if(!running) return;
-  running = false; clearInterval(countdownTimer); clearBubble();
+  running = false; clearQuestionTimer(); hideTestJudge(); clearBubble(); testCurrent = null;
   const clear = found >= targetCount;
   allLogs.push({stage: stageIndex + 1, found, miss, missed, targetCount, maxCombo, clear, logs:[...stageLogs]});
   if(!clear){ gameOver(); return; }
@@ -646,7 +745,7 @@ function renderMistakes(records, lesson=false){
 }
 function collectTestMistakes(){ return allLogs.flatMap(s=>s.logs.filter(x=>x.type === 'wrong' || x.type === 'missed')); }
 function gameOver(){
-  running = false; clearInterval(countdownTimer); clearBubble(); stopBgm(); playSound(wrongSe, 0.75);
+  running = false; clearQuestionTimer(); hideTestJudge(); clearBubble(); testCurrent = null; stopBgm(); playSound(wrongSe, 0.75);
   if(!allLogs.length || allLogs[allLogs.length-1].stage !== stageIndex + 1){ allLogs.push({stage: stageIndex + 1, found, miss, missed, targetCount, maxCombo, clear:false, logs:[...stageLogs]}); }
   el('gameOverSummary').innerHTML = `ステージ ${stageIndex + 1} で失敗。<br>FOUND <strong>${found}</strong> / TARGET <strong>${targetCount}</strong> / MISS <strong>${miss}</strong> / MISSED <strong>${missed}</strong>`;
   el('gameOverList').innerHTML = '<strong>間違えたもの一覧</strong>' + renderMistakes(collectTestMistakes());
@@ -664,19 +763,22 @@ function showReward(){
   rewardOverlay.classList.remove('hidden'); currentMode = 'idle'; modeLabel.textContent = '待機';
 }
 function resetGame(){
-  running = false; clearInterval(countdownTimer); clearBubble(); stopBgm(); toast.classList.remove('show'); comboBadge.classList.remove('show');
+  running = false; clearQuestionTimer(); hideTestJudge(); clearBubble(); testCurrent = null; stopBgm(); toast.classList.remove('show'); comboBadge.classList.remove('show');
   currentMode = 'idle'; stageIndex = 0; allLogs = []; lessonLogs = []; lessonBar.classList.add('hidden'); modeLabel.textContent = '待機';
   startOverlay.classList.remove('hidden'); stageClearOverlay.classList.add('hidden'); gameOverOverlay.classList.add('hidden'); rewardOverlay.classList.add('hidden');
-  resetHud(); timeLeft = 50; updateHud();
+  resetHud(); timeLeft = STYLE_CONFIG.answerSeconds; updateHud();
 }
 
 el('lessonStartBtn').onclick = startLessonMode;
 el('testStartBtn').onclick = startTestMode;
 el('answerRiskBtn').onclick = ()=>answerLesson(true);
 el('answerSafeBtn').onclick = ()=>answerLesson(false);
+el('testRiskBtn').onclick = ()=>answerTest(true);
+el('testSafeBtn').onclick = ()=>answerTest(false);
 nextLessonBtn.onclick = nextLesson;
 el('nextStageBtn').onclick = ()=>{ stageIndex++; startStage(); };
 document.querySelectorAll('.retryBtn').forEach(btn=>btn.onclick = resetGame);
+applyStyleConfig();
 resetGame();
 </script>
 </body>
