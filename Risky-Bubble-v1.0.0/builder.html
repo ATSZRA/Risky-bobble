@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Risky Bubble Builder</title>
+<style>
+:root{color-scheme:dark;--bg:#0c1019;--panel:#171e2d;--line:#46536f;--text:#f7f8fc;--muted:#aeb9d4;--gold:#ffe083;--blue:#8fdfff;--red:#ff8f8f}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}
+button{border:0;border-radius:12px;padding:10px 15px;background:var(--gold);color:#15120a;font-weight:900;cursor:pointer}
+button.secondary{background:#dce8ff;color:#10182a}button.danger{background:#52252d;color:#ffdfe3;border:1px solid #a64c5b}button:disabled{opacity:.45;cursor:not-allowed}
+.app{width:min(1440px,100%);margin:auto;padding:22px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:16px}
+h1{margin:0;font-size:clamp(30px,4vw,52px);letter-spacing:.03em}.lead{color:var(--muted);font-weight:700;margin:6px 0 0}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.status{margin-bottom:15px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:#111827;color:var(--muted);font-weight:750}
+.status.good{border-color:#4d986d;color:#bff6cf}.status.bad{border-color:#a64c5b;color:#ffd0d7}
+.tabs{display:flex;gap:8px;margin-bottom:16px;padding:6px;background:#111827;border:1px solid var(--line);border-radius:15px;width:max-content}
+.tab{background:transparent;color:#b9c5df;box-shadow:none}.tab.active{background:var(--gold);color:#15120a}
+.screen[hidden]{display:none}
+.layout{display:grid;grid-template-columns:minmax(390px,1fr) minmax(470px,1.35fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 14px 35px #0005}
+.card h2{margin:0 0 14px;color:var(--gold);font-size:20px}
+.field{display:grid;gap:6px;margin-bottom:12px}.field label{color:#cbd5ee;font-size:13px;font-weight:900}
+input,textarea,select{width:100%;border:1px solid #586782;border-radius:11px;background:#0d1422;color:#fff;padding:10px 11px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px #ffe08320}
+textarea{resize:vertical;min-height:80px;line-height:1.55}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formButtons{display:flex;gap:9px;flex-wrap:wrap}
+.listTools{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:11px}.count{align-self:center;color:var(--muted);font-weight:900}
+.list{max-height:650px;overflow:auto;border:1px solid #3b4760;border-radius:14px;background:#0d1422}
+.item{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:start;padding:12px;border-bottom:1px solid #344058;cursor:pointer}.item:last-child{border-bottom:0}.item:hover,.item.active{background:#202b42}
+.num{color:#8fa0c4;font-weight:900}.question{font-weight:850;line-height:1.45}.meta{margin-top:5px;color:#aab7d3;font-size:12px}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:1000}.badge.risk{background:#622833;color:#ffd9df}.badge.safe{background:#173f63;color:#ccecff}
+.styleGrid{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:13px}
+.asset{border:1px solid #3d4962;border-radius:14px;padding:12px;background:#101725}.preview{height:210px;border-radius:11px;background:#090e17 center/contain no-repeat;border:1px solid #303b50;margin:10px 0}.asset.background .preview{background-size:cover}
+.fileName{min-height:20px;margin:8px 0 0;color:#9eb0d5;font-size:12px;overflow-wrap:anywhere}.rangeRow{display:grid;grid-template-columns:72px 1fr 62px;gap:10px;align-items:center;margin-top:12px}.rangeRow label{font-size:12px;color:#cbd5ee;font-weight:900}.rangeRow output{text-align:center;color:var(--gold);font-weight:900}
+.audioCard{display:grid;align-content:start}.audioCard audio{width:100%;margin:12px 0}.styleIntro{margin-bottom:14px;color:var(--muted);line-height:1.6}
+.livePreviewCard{margin-bottom:14px}.previewToolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.previewModes{display:flex;gap:8px}.previewModes button{padding:8px 12px;background:#28344d;color:#dbe5ff}.previewModes button.active{background:var(--gold);color:#15120a}
+.gamePreview{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:18px;border:2px solid #52607f;background:#1b2437 center/cover no-repeat;box-shadow:0 18px 45px #0008}
+.gamePreview::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0a102055 0%,#0a102010 40%,#09111f88 100%);z-index:1;pointer-events:none}
+.previewHud{position:absolute;left:2%;right:2%;top:2%;z-index:4;display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.previewHud div{padding:7px 9px;border-radius:10px;background:#151d2ddd;border:1px solid #62708d;font-size:11px;font-weight:900;color:#aeb9dc}.previewHud b{display:block;color:var(--gold);font-size:15px;margin-top:2px}
+.previewCharacter{position:absolute;bottom:8%;z-index:2;transform-origin:bottom center}.previewCharacter img{display:block;width:100%;height:auto;max-height:84%;object-fit:contain}.previewCharacter.left{left:3%}.previewCharacter.right{right:3%}
+.previewBubble{position:absolute;left:50%;top:31%;transform:translateX(-50%);z-index:4;width:min(47%,570px);padding:15px 18px;border-radius:22px;background:#fff;color:#171717;border:4px solid #111;box-shadow:0 12px 24px #0007;font-size:clamp(12px,1.7vw,23px);font-weight:900;line-height:1.45}.previewBubble::after{content:"";position:absolute;right:18%;bottom:-18px;border-width:18px 13px 0;border-style:solid;border-color:#111 transparent transparent}
+.previewNames{position:absolute;left:4%;right:4%;bottom:3%;z-index:4;display:flex;justify-content:space-between;font-size:11px;font-weight:900}.previewNames span{padding:5px 10px;border-radius:999px;background:#000c;border:1px solid #ffffff55}
+.rewardScene{position:absolute;inset:0;z-index:6;display:grid;place-items:center;padding:5%;background:#080b12d9}.rewardScene[hidden]{display:none}.rewardPanel{width:min(82%,820px);display:grid;grid-template-columns:minmax(130px,32%) 1fr;gap:20px;align-items:center;padding:20px;border:2px solid var(--gold);border-radius:22px;background:linear-gradient(180deg,#253252,#111827);box-shadow:0 20px 60px #0009}.rewardPanel img{width:100%;max-height:250px;object-fit:contain;border-radius:14px;background:#0c111d}.rewardPanel h3{margin:0 0 8px;color:var(--gold);font-size:clamp(18px,3vw,34px)}.rewardPanel p{margin:0;line-height:1.6;font-weight:750}
+.hint{font-size:12px;color:var(--muted);line-height:1.55}.hiddenInput{position:absolute;left:-9999px}
+@media(max-width:940px){.top{display:block}.toolbar{justify-content:flex-start;margin-top:14px}.layout,.styleGrid{grid-template-columns:1fr}.preview{height:260px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top">
+    <div>
+      <h1>Risky Bubble Builder</h1>
+      <p class="lead">問題セットとPC版の画像・音声・キャラクターの大きさと位置を編集します。</p>
+    </div>
+    <div class="toolbar">
+      <button id="openFolderBtn">ゲームフォルダを開く</button>
+      <button id="saveAllBtn" disabled>ゲームへ保存</button>
+      <button id="downloadCsvBtn" class="secondary">CSVを書き出す</button>
+      <button id="importCsvBtn" class="secondary">CSVを読み込む</button>
+      <input id="csvInput" class="hiddenInput" type="file" accept=".csv,text/csv">
+    </div>
+  </div>
+  <div id="status" class="status">最初に「ゲームフォルダを開く」から、PC版の Risky Bubble フォルダを選択してください。</div>
+  <nav class="tabs" aria-label="編集画面">
+    <button class="tab active" type="button" data-screen="questions">問題編集画面</button>
+    <button class="tab" type="button" data-screen="style">スタイル編集画面</button>
+  </nav>
+
+  <div id="questionsScreen" class="screen layout">
+    <section class="card">
+      <h2 id="formHeading">問題セットを追加</h2>
+      <form id="questionForm">
+        <div class="field">
+          <label for="questionText">質問・台詞</label>
+          <textarea id="questionText" required placeholder="例：店長「今日は休憩なしで働いて」"></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="answer">正解</label>
+            <select id="answer">
+              <option value="risk">危険</option>
+              <option value="safe">セーフ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="category">カテゴリ</label>
+            <input id="category" required list="categoryList" placeholder="例：休憩">
+            <datalist id="categoryList"></datalist>
+          </div>
+        </div>
+        <div class="field">
+          <label for="explanation">解説</label>
+          <textarea id="explanation" required placeholder="なぜ危険／セーフなのかを入力"></textarea>
+        </div>
+        <div class="formButtons">
+          <button type="submit" id="commitBtn">一覧へ追加</button>
+          <button type="button" id="clearBtn" class="secondary">入力をクリア</button>
+          <button type="button" id="deleteBtn" class="danger" hidden>この問題を削除</button>
+        </div>
+      </form>
+      <p class="hint">一覧へ追加・更新した後、「ゲームへ保存」でCSVとゲーム本体へ反映されます。</p>
+    </section>
+
+    <section class="card">
+      <h2>問題セット一覧</h2>
+      <div class="listTools">
+        <input id="search" type="search" placeholder="質問・カテゴリ・解説を検索">
+        <div class="count" id="count">0件</div>
+      </div>
+      <div id="questionList" class="list"></div>
+    </section>
+
+  </div>
+
+  <section id="styleScreen" class="screen" hidden>
+    <div class="card livePreviewCard">
+      <div class="previewToolbar">
+        <h2>ゲーム画面プレビュー</h2>
+        <div class="previewModes">
+          <button id="playPreviewBtn" class="active" type="button">プレイ画面</button>
+          <button id="rewardPreviewBtn" type="button">報酬画面</button>
+        </div>
+      </div>
+      <div id="gamePreview" class="gamePreview">
+        <div class="previewHud">
+          <div>STAGE<b>1/3</b></div><div>TARGET<b>0/4</b></div><div>FOUND<b>0</b></div><div>MISS<b>0/4</b></div><div>LIMIT<b id="liveAnswerSeconds">5s</b></div>
+        </div>
+        <div id="liveCharacter1" class="previewCharacter left"><img id="liveCharacter1Image" alt="左キャラクター"></div>
+        <div id="liveCharacter2" class="previewCharacter right"><img id="liveCharacter2Image" alt="右キャラクター"></div>
+        <div id="liveBubble" class="previewBubble">店長「この台詞は労働法上、危険かな？」</div>
+        <div id="rewardScene" class="rewardScene" hidden>
+          <div class="rewardPanel">
+            <img id="liveRewardImage" alt="報酬イラスト">
+            <div><h3>ALL CLEAR</h3><p>すべてのステージを突破。<br>君は <strong>労働基準法の護り手</strong> だ。</p></div>
+          </div>
+        </div>
+      </div>
+      <p class="hint">画像とキャラクターの大きさ・位置は調整と同時に反映されます。音声は下のプレーヤーで試聴できます。</p>
+    </div>
+    <div class="card">
+      <h2>スタイル編集</h2>
+      <p class="styleIntro">画像・音声・キャラクターの大きさと位置を変更し、「ゲームへ保存」でPC版へまとめて反映します。</p>
+      <div class="styleGrid">
+        <div class="asset background">
+          <strong>背景</strong>
+          <div id="backgroundPreview" class="preview"></div>
+          <button type="button" data-pick="background">画像を選ぶ</button>
+          <input id="backgroundInput" class="hiddenInput" type="file" accept="image/png,image/jpeg,image/webp">
+          <div id="backgroundName" class="fileName">未読込</div>
+          <p class="hint">推奨比率 16:9</p>
+        </div>
+        <div class="asset">
+          <strong>左キャラクター</strong>
+          <div id="character1Preview" class="preview"></div>
+          <button type="button" data-pick="character1">画像を選ぶ</button>
+          <input id="character1Input" class="hiddenInput" type="file" accept="image/png,image/jpeg,image/webp">
+          <div id="character1Name" class="fileName">未読込</div>
+          <div class="rangeRow"><label for="character1Size">大きさ</label><input id="character1Size" type="range" min="10" max="45" step="1" value="24"><output id="character1SizeOut">24%</output></div>
+          <div class="rangeRow"><label for="character1X">横位置</label><input id="character1X" type="range" min="0" max="65" step="1" value="3"><output id="character1XOut">3%</output></div>
+          <div class="rangeRow"><label for="character1Y">縦位置</label><input id="character1Y" type="range" min="0" max="45" step="1" value="10"><output id="character1YOut">10%</output></div>
+          <p class="hint">透過PNG推奨</p>
+        </div>
+        <div class="asset">
+          <strong>右キャラクター</strong>
+          <div id="character2Preview" class="preview"></div>
+          <button type="button" data-pick="character2">画像を選ぶ</button>
+          <input id="character2Input" class="hiddenInput" type="file" accept="image/png,image/jpeg,image/webp">
+          <div id="character2Name" class="fileName">未読込</div>
+          <div class="rangeRow"><label for="character2Size">大きさ</label><input id="character2Size" type="range" min="10" max="45" step="1" value="24"><output id="character2SizeOut">24%</output></div>
+          <div class="rangeRow"><label for="character2X">横位置</label><input id="character2X" type="range" min="0" max="65" step="1" value="3"><output id="character2XOut">3%</output></div>
+          <div class="rangeRow"><label for="character2Y">縦位置</label><input id="character2Y" type="range" min="0" max="45" step="1" value="10"><output id="character2YOut">10%</output></div>
+          <p class="hint">透過PNG推奨</p>
+        </div>
+        <div class="asset audioCard">
+          <strong>BGM</strong>
+          <audio id="bgmPreview" controls loop></audio>
+          <button type="button" data-pick="bgm">音声を選ぶ</button>
+          <button type="button" id="clearBgmBtn" class="secondary">BGMなしにする</button>
+          <input id="bgmInput" class="hiddenInput" type="file" accept="audio/*">
+          <div id="bgmName" class="fileName">設定なし</div>
+        </div>
+        <div class="asset audioCard">
+          <strong>正解SE</strong>
+          <audio id="correctSePreview" controls></audio>
+          <button type="button" data-pick="correctSe">音声を選ぶ</button>
+          <input id="correctSeInput" class="hiddenInput" type="file" accept="audio/*">
+          <div id="correctSeName" class="fileName">未読込</div>
+        </div>
+        <div class="asset audioCard">
+          <strong>間違いSE</strong>
+          <audio id="wrongSePreview" controls></audio>
+          <button type="button" data-pick="wrongSe">音声を選ぶ</button>
+          <input id="wrongSeInput" class="hiddenInput" type="file" accept="audio/*">
+          <div id="wrongSeName" class="fileName">未読込</div>
+        </div>
+        <div class="asset">
+          <strong>報酬イラスト</strong>
+          <div id="rewardPreview" class="preview"></div>
+          <button type="button" data-pick="reward">画像を選ぶ</button>
+          <input id="rewardInput" class="hiddenInput" type="file" accept="image/png,image/jpeg,image/webp">
+          <div id="rewardName" class="fileName">未読込</div>
+        </div>
+        <div class="asset">
+          <strong>ゲーム設定</strong>
+          <p class="hint">すべての問題に共通する回答制限時間です。0秒になると自動的に「セーフ」が選ばれます。</p>
+          <div class="rangeRow"><label for="answerSeconds">回答時間</label><input id="answerSeconds" type="range" min="1" max="30" step="1" value="5"><output id="answerSecondsOut">5秒</output></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const DEFAULT_STYLE = {
+  background:'背景イラスト/background.png', character1:'キャライラスト/character1.png', character2:'キャライラスト/character2.png',
+  character1Size:24, character2Size:24, character1X:3, character1Y:10, character2X:3, character2Y:10,
+  answerSeconds:5, bgm:'', correctSe:'音声/correct.mp3', wrongSe:'音声/wrong.mp3', reward:'報酬イラスト/reward.png'
+};
+const state = {
+  questions: [], editing: null, directory: null, files: {}, fileChanged: {}, objectUrls: [],
+  style: {...DEFAULT_STYLE}
+};
+const fields = { text:$('questionText'), answer:$('answer'), category:$('category'), explanation:$('explanation') };
+
+function setStatus(message, type=''){
+  $('status').textContent = message;
+  $('status').className = `status ${type}`;
+}
+function csvCell(value){ return `"${String(value ?? '').replace(/"/g,'""')}"`; }
+function toCsv(rows){
+  const header = ['id','question','answer','category','explanation'];
+  const body = rows.map((q,i)=>[i+1,q.text,q.risk?'risk':'safe',q.category,q.explanation].map(csvCell).join(','));
+  return '\ufeff' + [header.join(','),...body].join('\r\n') + '\r\n';
+}
+function parseCsv(text){
+  text = text.replace(/^\ufeff/,'');
+  const table=[]; let row=[], cell='', quoted=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i], next=text[i+1];
+    if(quoted){
+      if(c === '"' && next === '"'){ cell+='"'; i++; }
+      else if(c === '"') quoted=false;
+      else cell+=c;
+    }else if(c === '"') quoted=true;
+    else if(c === ','){ row.push(cell); cell=''; }
+    else if(c === '\n'){ row.push(cell.replace(/\r$/,'')); table.push(row); row=[]; cell=''; }
+    else cell+=c;
+  }
+  if(cell || row.length){ row.push(cell); table.push(row); }
+  if(!table.length) return [];
+  const headers=table.shift().map(x=>x.trim().toLowerCase());
+  const at = (...names) => names.map(n=>headers.indexOf(n)).find(i=>i>=0);
+  const qi=at('question','text','質問'), ai=at('answer','risk','回答'), ci=at('category','カテゴリ'), ei=at('explanation','解説');
+  if([qi,ai,ci,ei].some(i=>i === undefined)) throw new Error('CSVの列名は question, answer, category, explanation が必要です。');
+  return table.filter(r=>r.some(Boolean)).map((r,index)=>{
+    const answer=String(r[ai]||'').trim().toLowerCase();
+    if(!['risk','safe','true','false','危険','セーフ'].includes(answer)) throw new Error(`${index+2}行目の回答が不正です。`);
+    return {text:(r[qi]||'').trim(),risk:['risk','true','危険'].includes(answer),category:(r[ci]||'').trim(),explanation:(r[ei]||'').trim()};
+  }).filter(q=>q.text && q.category && q.explanation);
+}
+function render(){
+  const query=$('search').value.trim().toLowerCase();
+  const matches=state.questions.map((q,index)=>({q,index})).filter(({q})=>!query || [q.text,q.category,q.explanation].some(v=>v.toLowerCase().includes(query)));
+  $('count').textContent = `${matches.length} / ${state.questions.length}件`;
+  $('questionList').innerHTML = matches.length ? matches.map(({q,index})=>`
+    <div class="item ${state.editing===index?'active':''}" data-index="${index}">
+      <div class="num">#${index+1}</div>
+      <div><div class="question">${escapeHtml(q.text)}</div><div class="meta">${escapeHtml(q.category)}｜${escapeHtml(q.explanation)}</div></div>
+      <span class="badge ${q.risk?'risk':'safe'}">${q.risk?'危険':'セーフ'}</span>
+    </div>`).join('') : '<div class="item"><div></div><div class="meta">該当する問題はありません。</div></div>';
+  $('categoryList').innerHTML = [...new Set(state.questions.map(q=>q.category))].sort().map(x=>`<option value="${escapeHtml(x)}">`).join('');
+}
+function escapeHtml(value){ return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function clearForm(){
+  state.editing=null; $('questionForm').reset(); $('formHeading').textContent='問題セットを追加'; $('commitBtn').textContent='一覧へ追加'; $('deleteBtn').hidden=true; render(); fields.text.focus();
+}
+function editQuestion(index){
+  const q=state.questions[index]; if(!q) return;
+  state.editing=index; fields.text.value=q.text; fields.answer.value=q.risk?'risk':'safe'; fields.category.value=q.category; fields.explanation.value=q.explanation;
+  $('formHeading').textContent=`問題 #${index+1} を編集`; $('commitBtn').textContent='変更を一覧へ反映'; $('deleteBtn').hidden=false; render(); window.scrollTo({top:0,behavior:'smooth'});
+}
+async function readTextFile(handle,name){
+  try{ const file=await getFileByPath(handle,name); return await file.text(); }catch(e){ if(e.name==='NotFoundError') return null; throw e; }
+}
+async function writeFile(handle,name,data){
+  const parts=name.split('/').filter(Boolean), fileName=parts.pop(); let directory=handle;
+  for(const part of parts) directory=await directory.getDirectoryHandle(part,{create:true});
+  const fileHandle=await directory.getFileHandle(fileName,{create:true}); const writable=await fileHandle.createWritable(); await writable.write(data); await writable.close();
+}
+async function getFileByPath(handle,path){
+  const parts=path.split('/').filter(Boolean), fileName=parts.pop(); let directory=handle;
+  for(const part of parts) directory=await directory.getDirectoryHandle(part);
+  return await (await directory.getFileHandle(fileName)).getFile();
+}
+async function showExistingFile(key, name, kind){
+  if(!name) return;
+  try{
+    const file=await getFileByPath(state.directory,name);
+    setAsset(key,file,kind,false);
+  }catch(e){ if(e.name!=='NotFoundError') throw e; }
+}
+function setAsset(key,file,kind,changed=true){
+  if(!file) return; const url=URL.createObjectURL(file); state.objectUrls.push(url);
+  if(kind==='image'){
+    $(`${key}Preview`).style.backgroundImage=`url("${url}")`;
+    if(key==='background') $('gamePreview').style.backgroundImage=`url("${url}")`;
+    if(key==='character1') $('liveCharacter1Image').src=url;
+    if(key==='character2') $('liveCharacter2Image').src=url;
+    if(key==='reward') $('liveRewardImage').src=url;
+  }
+  else $(`${key}Preview`).src=url;
+  $(`${key}Name`).textContent=file.name;
+  state.files[key]=file; state.fileChanged[key]=changed;
+}
+async function fileToPngBlob(file){
+  if(file.type === 'image/png') return file;
+  const bitmap=await createImageBitmap(file), canvas=document.createElement('canvas');
+  canvas.width=bitmap.width; canvas.height=bitmap.height; canvas.getContext('2d').drawImage(bitmap,0,0); bitmap.close();
+  return await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('画像をPNGへ変換できませんでした。')),'image/png'));
+}
+function extractQuestionsFromHtml(html){
+  const match=html.match(/\/\* BUILDER_QUESTION_POOL_START \*\/\s*const QUESTION_POOL\s*=\s*(\[[\s\S]*?\]);\s*\/\* BUILDER_QUESTION_POOL_END \*\//);
+  if(!match) throw new Error('index.htmlから問題データを読み取れませんでした。');
+  return JSON.parse(match[1]);
+}
+function extractStyleFromHtml(html){
+  const match=html.match(/\/\* BUILDER_STYLE_CONFIG_START \*\/\s*const STYLE_CONFIG\s*=\s*(\{[\s\S]*?\});\s*\/\* BUILDER_STYLE_CONFIG_END \*\//);
+  return match ? {...DEFAULT_STYLE,...JSON.parse(match[1])} : {...DEFAULT_STYLE};
+}
+function syncStyleControls(){
+  for(const key of ['character1Size','character1X','character1Y','character2Size','character2X','character2Y']){
+    $(key).value=state.style[key]; $(`${key}Out`).textContent=`${state.style[key]}%`;
+  }
+  $('answerSeconds').value=state.style.answerSeconds; $('answerSecondsOut').textContent=`${state.style.answerSeconds}秒`;
+  $('liveAnswerSeconds').textContent=`${state.style.answerSeconds}s`;
+  updateCharacterPreview('character1');
+  updateCharacterPreview('character2');
+  updatePreviewQuestion();
+}
+function updateCharacterPreview(key){
+  const target=key==='character1'?'liveCharacter1':'liveCharacter2';
+  $(target).style.width=`${$(`${key}Size`).value}%`;
+  $(target).style.bottom=`${$(`${key}Y`).value}%`;
+  if(key==='character1') $(target).style.left=`${$(`${key}X`).value}%`;
+  else $(target).style.right=`${$(`${key}X`).value}%`;
+}
+function updatePreviewQuestion(){
+  const q=state.questions[0];
+  $('liveBubble').textContent=q ? q.text : '店長「この台詞は労働法上、危険かな？」';
+}
+function audioExtension(file){
+  const fromName=(file.name.match(/\.([a-z0-9]+)$/i)||[])[1];
+  if(fromName) return fromName.toLowerCase();
+  return ({'audio/mpeg':'mp3','audio/wav':'wav','audio/ogg':'ogg','audio/mp4':'m4a','audio/webm':'webm'})[file.type] || 'mp3';
+}
+async function openFolder(){
+  if(!window.showDirectoryPicker){ setStatus('この機能には最新版のChromeまたはEdgeが必要です。CSVの読込・書出しは利用できます。','bad'); return; }
+  try{
+    state.directory=await window.showDirectoryPicker({mode:'readwrite'});
+    const indexHtml=await readTextFile(state.directory,'index.html');
+    if(!indexHtml) throw new Error('選択したフォルダに index.html がありません。PC版の Risky Bubble フォルダを選んでください。');
+    const csv=await readTextFile(state.directory,'問題CSV/questions.csv');
+    state.questions=csv ? parseCsv(csv) : extractQuestionsFromHtml(indexHtml);
+    state.style=extractStyleFromHtml(indexHtml); syncStyleControls();
+    await Promise.all([
+      showExistingFile('background',state.style.background,'image'),
+      showExistingFile('character1',state.style.character1,'image'),
+      showExistingFile('character2',state.style.character2,'image'),
+      showExistingFile('reward',state.style.reward,'image'),
+      showExistingFile('bgm',state.style.bgm,'audio'),
+      showExistingFile('correctSe',state.style.correctSe,'audio'),
+      showExistingFile('wrongSe',state.style.wrongSe,'audio')
+    ]);
+    updatePreviewQuestion();
+    $('saveAllBtn').disabled=false; clearForm(); setStatus(`${state.directory.name} を開きました。問題 ${state.questions.length}件を読み込みました。`,'good');
+  }catch(e){ if(e.name!=='AbortError') setStatus(e.message,'bad'); }
+}
+async function saveAll(){
+  if(!state.directory) return;
+  try{
+    if(!state.questions.length) throw new Error('問題が1件もありません。');
+    const csv=toCsv(state.questions);
+    let html=await readTextFile(state.directory,'index.html');
+    if(!html) throw new Error('index.htmlが見つかりません。');
+    const replacement=`/* BUILDER_QUESTION_POOL_START */\nconst QUESTION_POOL = ${JSON.stringify(state.questions,null,2)};\n/* BUILDER_QUESTION_POOL_END */`;
+    const questionPattern=/\/\* BUILDER_QUESTION_POOL_START \*\/[\s\S]*?\/\* BUILDER_QUESTION_POOL_END \*\//;
+    if(!questionPattern.test(html)) throw new Error('index.htmlの問題データ更新位置を見つけられませんでした。');
+    let updated=html.replace(questionPattern,replacement);
+    state.style.character1Size=Number($('character1Size').value);
+    state.style.character2Size=Number($('character2Size').value);
+    state.style.character1X=Number($('character1X').value);
+    state.style.character1Y=Number($('character1Y').value);
+    state.style.character2X=Number($('character2X').value);
+    state.style.character2Y=Number($('character2Y').value);
+    state.style.answerSeconds=Number($('answerSeconds').value);
+    for(const key of ['background','character1','character2','reward']){
+      if(state.files[key] && state.fileChanged[key]) state.style[key]=({
+        background:'背景イラスト/background.png',
+        character1:'キャライラスト/character1.png',
+        character2:'キャライラスト/character2.png',
+        reward:'報酬イラスト/reward.png'
+      })[key];
+    }
+    for(const [key,base] of [['bgm','bgm'],['correctSe','correct_se'],['wrongSe','wrong_se']]){
+      if(state.files[key] && state.fileChanged[key]) state.style[key]=`音声/${base}.${audioExtension(state.files[key])}`;
+    }
+    const styleReplacement=`/* BUILDER_STYLE_CONFIG_START */\nconst STYLE_CONFIG = ${JSON.stringify(state.style,null,2)};\n/* BUILDER_STYLE_CONFIG_END */`;
+    const stylePattern=/\/\* BUILDER_STYLE_CONFIG_START \*\/[\s\S]*?\/\* BUILDER_STYLE_CONFIG_END \*\//;
+    if(!stylePattern.test(updated)) throw new Error('index.htmlのスタイル設定更新位置を見つけられませんでした。');
+    updated=updated.replace(stylePattern,styleReplacement);
+    await writeFile(state.directory,'問題CSV/questions.csv',csv);
+    await writeFile(state.directory,'index.html',updated);
+    for(const key of ['background','character1','character2','reward']){
+      if(state.files[key] && state.fileChanged[key]) await writeFile(state.directory,state.style[key],await fileToPngBlob(state.files[key]));
+    }
+    for(const key of ['bgm','correctSe','wrongSe']){
+      if(state.files[key] && state.fileChanged[key]) await writeFile(state.directory,state.style[key],state.files[key]);
+    }
+    Object.keys(state.fileChanged).forEach(key=>state.fileChanged[key]=false);
+    setStatus(`保存完了：問題 ${state.questions.length}件、CSV、画像・音声・キャラクターの大きさと位置をゲームへ同期しました。`,'good');
+  }catch(e){ setStatus(`保存できませんでした：${e.message}`,'bad'); }
+}
+function downloadCsv(){
+  if(!state.questions.length){ setStatus('書き出す問題がありません。','bad'); return; }
+  const blob=new Blob([toCsv(state.questions)],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='questions.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); setStatus(`questions.csv（${state.questions.length}件）を書き出しました。`,'good');
+}
+
+$('questionForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const q={text:fields.text.value.trim(),risk:fields.answer.value==='risk',category:fields.category.value.trim(),explanation:fields.explanation.value.trim()};
+  if(!q.text||!q.category||!q.explanation) return;
+  if(state.editing===null) state.questions.push(q); else state.questions[state.editing]=q;
+  setStatus(state.editing===null?'問題を一覧へ追加しました。保存するとゲームへ反映されます。':'問題を更新しました。保存するとゲームへ反映されます。','good'); clearForm();
+});
+$('questionList').addEventListener('click',e=>{ const item=e.target.closest('[data-index]'); if(item) editQuestion(Number(item.dataset.index)); });
+$('deleteBtn').onclick=()=>{ if(state.editing===null) return; state.questions.splice(state.editing,1); setStatus('問題を一覧から削除しました。保存するとゲームへ反映されます。','good'); clearForm(); };
+$('clearBtn').onclick=clearForm; $('search').oninput=render;
+$('openFolderBtn').onclick=openFolder; $('saveAllBtn').onclick=saveAll; $('downloadCsvBtn').onclick=downloadCsv;
+$('importCsvBtn').onclick=()=>$('csvInput').click();
+$('csvInput').onchange=async e=>{ try{ const file=e.target.files[0]; if(!file)return; state.questions=parseCsv(await file.text()); clearForm(); setStatus(`${file.name} から ${state.questions.length}件を読み込みました。`,'good'); }catch(err){setStatus(err.message,'bad')} finally{e.target.value=''} };
+document.querySelectorAll('[data-pick]').forEach(btn=>btn.onclick=()=>$(`${btn.dataset.pick}Input`).click());
+for(const key of ['background','character1','character2','reward']) $(`${key}Input`).onchange=e=>{ const file=e.target.files[0]; if(file){setAsset(key,file,'image',true);setStatus('画像を選択しました。保存するとゲームへ反映されます。','good')} };
+for(const key of ['bgm','correctSe','wrongSe']) $(`${key}Input`).onchange=e=>{ const file=e.target.files[0]; if(file){setAsset(key,file,'audio',true);setStatus('音声を選択しました。保存するとゲームへ反映されます。','good')} };
+$('clearBgmBtn').onclick=()=>{
+  state.style.bgm=''; delete state.files.bgm; state.fileChanged.bgm=false;
+  $('bgmPreview').removeAttribute('src'); $('bgmPreview').load(); $('bgmName').textContent='設定なし';
+  setStatus('BGMを使用しない設定にしました。保存するとゲームへ反映されます。','good');
+};
+for(const key of ['character1','character2']){
+  for(const property of ['Size','X','Y']) $(`${key}${property}`).oninput=e=>{
+    $(`${key}${property}Out`).textContent=`${e.target.value}%`;
+    updateCharacterPreview(key);
+  };
+}
+$('answerSeconds').oninput=e=>{
+  $('answerSecondsOut').textContent=`${e.target.value}秒`;
+  $('liveAnswerSeconds').textContent=`${e.target.value}s`;
+};
+$('playPreviewBtn').onclick=()=>{
+  $('rewardScene').hidden=true; $('playPreviewBtn').classList.add('active'); $('rewardPreviewBtn').classList.remove('active');
+};
+$('rewardPreviewBtn').onclick=()=>{
+  $('rewardScene').hidden=false; $('rewardPreviewBtn').classList.add('active'); $('playPreviewBtn').classList.remove('active');
+};
+document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===tab));
+  $('questionsScreen').hidden=tab.dataset.screen!=='questions'; $('styleScreen').hidden=tab.dataset.screen!=='style';
+});
+window.addEventListener('beforeunload',()=>state.objectUrls.forEach(URL.revokeObjectURL));
+render();
+</script>
+</body>
+</html>
